@@ -1,0 +1,10 @@
+# The plaintext page and the raw corpus stay local.
+# Committing either to a public repo defeats the encryption.
+src/index.html
+data/
+rcp_raw.tsv
+graph.json
+
+__pycache__/
+*.pyc
+.DS_Store
