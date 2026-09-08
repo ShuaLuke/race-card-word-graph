@@ -12,7 +12,8 @@ for line in open(SRC, encoding="utf-8"):
     date, _, text = line.partition("\t")
     text = unicodedata.normalize("NFKC", text).replace("’", "'").replace("‘", "'")
     text = text.replace("“", '"').replace("”", '"')
-    rows.append((date if re.match(r"^\d{4}-\d{2}$", date) else "", text.strip()))
+    # a handful of source posts carry junk years like "0202"; treat anything outside 20xx as undated
+    rows.append((date if re.match(r"^20\d{2}-\d{2}$", date) else "", text.strip()))
 
 # ---------- tokenize ----------
 STOP = set("""a an the and or of to in on at as by for from with is are was were be been being am
@@ -57,8 +58,8 @@ for d in docs:
         for j in range(i + 1, len(u)):
             pair_df[(u[i], u[j])] += 1
 
-MIN_DF = 12            # word must appear in >= 25 cards
-MIN_PAIR = 4           # pair must co-occur in >= 6 cards
+MIN_DF = 12            # word must appear in >= 12 cards
+MIN_PAIR = 4           # pair must co-occur in >= 4 cards
 vocab = {w for w, c in df.items() if c >= MIN_DF}
 
 edges = []
@@ -88,7 +89,7 @@ keep = sorted(G.nodes(), key=lambda w: df[w], reverse=True)[:TOP_N]
 G = G.subgraph(keep).copy()
 G.remove_nodes_from(list(nx.isolates(G)))
 
-# prune weakest edges per node but keep graph connected-ish (keep top 12 by npmi per node)
+# prune weakest edges per node but keep graph connected-ish (keep top 10 by npmi per node)
 KEEP_PER_NODE = 10
 keep_edges = set()
 for n in G.nodes():
